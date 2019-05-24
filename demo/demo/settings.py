@@ -123,7 +123,16 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES':[
+    'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-    ]
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'demoapp.api.utils.mythrottle.AuthorThrottle',
+        'demoapp.api.utils.mythrottle.BookThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'author': '3/min',
+        'publisher': '5/min',
+        'book': '4/min',
+    },
 }

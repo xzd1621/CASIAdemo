@@ -1,8 +1,10 @@
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, mixins, exceptions
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.throttling import ScopedRateThrottle
-from rest_framework.views import APIView
+
+from .MyPermission import AuthorPermission, PublisherPermission
+from .MyAuth import PublisherAuth, AuthorAuth
 
 from ..models import Publisher, Author, Book
 from .serializers import PublisherSerializer, AuthorSerializer, BookSerializer
@@ -12,6 +14,8 @@ from .utils.mythrottle import AuthorThrottle, BookThrottle
 class PublisherListView(mixins.ListModelMixin, mixins.CreateModelMixin,  generics.GenericAPIView):
     queryset = Publisher.objects.all()
     serializer_class = PublisherSerializer
+    authentication_classes = [PublisherAuth, ]
+    permission_classes = [PublisherPermission, ]
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -41,6 +45,8 @@ class PublisherDetailView(mixins.RetrieveModelMixin,
                           generics.GenericAPIView):
     queryset = Publisher.objects.all()
     serializer_class = PublisherSerializer
+    authentication_classes = [PublisherAuth, ]
+    permission_classes = [PublisherPermission, ]
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -68,8 +74,8 @@ class PublisherDetailView(mixins.RetrieveModelMixin,
 
 
 class AuthorListView(mixins.ListModelMixin, mixins.CreateModelMixin,  generics.GenericAPIView):
-    authentication_classes = (BasicAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    authentication_classes = [AuthorAuth, ]
+    permission_classes = [AuthorPermission, ]
     throttle_classes = [AuthorThrottle, ]
 
     queryset = Author.objects.all()
@@ -86,8 +92,8 @@ class AuthorDetailView(mixins.RetrieveModelMixin,
                        mixins.UpdateModelMixin,
                        mixins.DestroyModelMixin,
                        generics.GenericAPIView):
-    authentication_classes = (BasicAuthentication,)
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = [AuthorAuth, ]
+    permission_classes = [AuthorPermission, ]
     throttle_classes = [AuthorThrottle, ]
 
     queryset = Author.objects.all()

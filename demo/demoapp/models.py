@@ -3,6 +3,11 @@ from django.db import models
 # Create your models here.
 
 
+class MyUser(models.Model):
+    username = models.CharField(max_length=30, unique=True)
+    password = models.CharField(max_length=30)
+
+
 class Publisher(models.Model):
     name = models.CharField(max_length=30)
     address = models.CharField(max_length=50)

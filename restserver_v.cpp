@@ -11,44 +11,52 @@ using namespace concurrency::streams;       // Asynchronous streams
  
 using namespace std;
  
+ 
+
 static void print_results(json::value const & value)
+
+{
+
+    if(!value.is_null()) {
+        auto userId = value.at(U("userId")).as_integer();
+        auto id = value.at(U("id")).as_integer();
+        auto title = value.at(U("title")).as_string();
+        auto body = boost::algorithm::replace_all_copy(value.at(U("body")).as_string(), "\n", "\\n");
+        cout << "Post {userId = " << userId
+            << ", id = " << id
+            << ", title = \"" << title
+            << "\", body = \"" << body
+            << "\"}" << endl;
+    }
+}
+
+static void my_print_results(json::value const & value)
 {
     if(!value.is_null()) {
-         for (auto iter = value.cbegin(); iter != value.cend(); ++iter){
-              auto userId = iter.at(U("userId")).as_integer();
-              auto id = value.at(U("id")).as_integer();
-              auto title = value.at(U("title")).as_string();
-              auto body = boost::algorithm::replace_all_copy(value.at(U("body")).as_string(), "\n", "\\n");
-
+         auto array = value.as_array();
+         for(int i=0;i<array.size();i++){
+            auto userId = array[i].at(U("userId")).as_integer();
+            auto id = array[i].at(U("id")).as_integer();
+            auto title = array[i].at(U("title")).as_string();
+            auto body = boost::algorithm::replace_all_copy(array[i].at(U("body")).as_string(), "\n", "\\n");
             cout << "Post {userId = " << userId
             << ", id = " << id
             << ", title = \"" << title
             << "\", body = \"" << body
             << "\"}" << endl;
          }
- /*       auto userId = value.at(U("userId")).as_integer();
-        auto id = value.at(U("id")).as_integer();
-        auto title = value.at(U("title")).as_string();
-        auto body = boost::algorithm::replace_all_copy(value.at(U("body")).as_string(), "\n", "\\n");
- 
-        cout << "Post {userId = " << userId
-            << ", id = " << id
-            << ", title = \"" << title
-            << "\", body = \"" << body
-            << "\"}" << endl;
- */
     }
 }
  
 static void json_get()
 {
-    //http_client client(U("http://127.0.0.1:8000/api/publisher/"));
+    http_client client(U("https://jsonplaceholder.typicode.com/"));
     // Build request URI and start the request.
     //uri_builder builder(U("?format=json"));
  
-    http_client client(U("https://jsonplaceholder.typicode.com/"));
+    //http_client client(U("http://192.168.1.148:8000/"));
     // Build request URI and start the request.
-    uri_builder builder(U("posts/1"));
+    uri_builder builder(U("posts"));
 
 
     client
@@ -71,7 +79,8 @@ static void json_get()
         // get the JSON value from the task and display content from it
         try {
             json::value const & v = previousTask.get();
-            print_results(v);
+            //print_results(v);
+            my_print_results(v);
         } catch (http_exception const & e) {
             printf("Error exception:%s\n", e.what());
         }
@@ -140,7 +149,7 @@ static void json_delete()
     http_client client(U("https://jsonplaceholder.typicode.com/"));
     
     client
-    .request(methods::DEL, U("posts/1"))
+    .request(methods::DEL, U("posts"))
     .then([](http_response response) -> pplx::task<string_t> {
         if(response.status_code() == status_codes::OK) {
             return response.extract_string();
@@ -177,9 +186,9 @@ static void TestRequest()
 
 int main(int argc, char* argv[])
 {
-    TestRequest();
-    //json_get();
-    //json_post();
+    // TestRequest();
+    json_get();
+    // json_post();
     //json_update();
     //json_delete();
  

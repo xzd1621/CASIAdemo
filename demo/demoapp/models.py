@@ -6,6 +6,10 @@ from django.db import models
 class MyUser(models.Model):
     username = models.CharField(max_length=30, unique=True)
     password = models.CharField(max_length=30)
+    user_type = models.IntegerField(
+        choices=((1, 'ordinary'), (2, 'vip')),
+        default=1
+    )
 
 
 class Publisher(models.Model):

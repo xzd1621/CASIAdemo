@@ -131,7 +131,7 @@ REST_FRAMEWORK = {
         'demoapp.api.utils.mythrottle.BookThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'author': '3/min',
+        'author': '10/min',
         'publisher': '5/min',
         'book': '4/min',
     },

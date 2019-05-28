@@ -1,5 +1,6 @@
 import json
 
+from django.http import HttpResponse
 from rest_framework.authentication import BaseAuthentication
 
 from demoapp.models import MyUser
@@ -12,7 +13,7 @@ from demoapp.models import MyUser
 """
 class AuthorAuth(BaseAuthentication):
     def authenticate(self, request):
-        request.session.set_expiry(10)
+        request.session.set_expiry(15)
         if request.method in ['GET', 'POST', 'PUT', 'DELETE']:
             if 'is_login' not in request.session.keys() or not request.session['is_login']:
                 username = request.GET.get('username')
@@ -46,7 +47,7 @@ class AuthorAuth(BaseAuthentication):
 """
 class PublisherAuth(BaseAuthentication):
     def authenticate(self, request):
-        request.session.set_expiry(10)
+        request.session.set_expiry(15)
         if request.method in ['POST', 'PUT', 'DELETE']:
             if 'is_login' not in request.session.keys() or not request.session['is_login']:
                 username = request.GET.get('username')

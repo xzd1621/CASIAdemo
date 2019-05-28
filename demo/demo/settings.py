@@ -129,10 +129,11 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
         'demoapp.api.utils.mythrottle.AuthorThrottle',
         'demoapp.api.utils.mythrottle.BookThrottle',
+        'demoapp.api.utils.mythrottle.PublisherThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
         'author': '10/min',
-        'publisher': '5/min',
+        'publisher': '3/min',
         'book': '4/min',
     },
 }

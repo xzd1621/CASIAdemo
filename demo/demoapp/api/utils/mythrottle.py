@@ -13,3 +13,10 @@ class BookThrottle(AnonRateThrottle):
 
     def get_cache_key(self, request, view):
         return self.get_ident(request)
+
+
+class PublisherThrottle(AnonRateThrottle):
+    scope = 'publisher'
+
+    def get_cache_key(self, request, view):
+        return self.get_ident(request)

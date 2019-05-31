@@ -25,6 +25,7 @@ class Author
         int  check_login();
         int  json_get();
         void json_post(json::value json_v);
+        void json_post(json::value json_v, string username, string password);
         void my_print_results(json::value const & value);
         void http_status(int status_code);
         string MD5(const string& src );
@@ -173,15 +174,15 @@ void Author::json_post(json::value json_v)
     cout<<"redirect: "<<redirect<<endl;
     uri_builder builder(U(redirect));
     client
-    .request(methods::POST, U(""), json_v)
-    .then([](http_response response) -> pplx::task<string_t> {
+    .request(methods::POST, builder.to_string(), json_v)
+    .then([&](http_response response) -> pplx::task<string_t> {
         cout<<"post.request: "<<response.status_code()<<endl;
         if(response.status_code() == status_codes::Created) {
             return response.extract_string();
         }
         return pplx::task_from_result(string_t());
     })
-    .then([](pplx::task<string_t> previousTask) {
+    .then([&](pplx::task<string_t> previousTask) {
         try {
             string_t const & v = previousTask.get();
             cout << v << endl;
@@ -223,6 +224,7 @@ int main()
             }while((t2-t1)<15);
             author.username="";
             author.password="";
+            login=false;
          }
         else cout<<"Time out, login again."<<endl;  //login in failed
     }

@@ -19,13 +19,13 @@ class Author
 {
     public:
         string username;
-        string password;   
+        string password;
+        string uuid;   
         //http_client client(U("http://127.0.0.1:8000/api/"));
         void user_login();
         int  check_login();
         int  json_get();
         void json_post(json::value json_v);
-        void json_post(json::value json_v, string username, string password);
         void my_print_results(json::value const & value);
         void http_status(int status_code);
         string MD5(const string& src );
@@ -50,12 +50,11 @@ string Author::MD5(const string& src )
         sprintf( tmp, "%02X", md[i] );
         md5_string += tmp;
     }   
-    for(int i=0;i<md5_string.length();i++)
-    {
+    for(int i=0;i<md5_string.length();i++)  
+    {   //change bif letter into small one 
         if(md5_string[i]>='A'&&md5_string[i]<='Z')
         md5_string[i] += 'a'-'A';
     }
-
     return md5_string;
 }
 
@@ -101,10 +100,6 @@ void Author::user_login()
     cout<<"Please input your username and password\n";
     cin>>this->username>>this->password;
     cout<<"MD5:"<<MD5(this->username)<<endl;
-    if(MD5(this->username)=="21232f297a57a5a743894a0e4a801fc3"){
-        cout<<"same"<<endl;
-    }
-    else cout<<"dif"<<endl;
 }
 
 int Author::check_login()
@@ -133,7 +128,7 @@ int Author::json_get()
     cout << "json_get by "<<this->username<<endl;
     int status=0;
     http_client client(U("http://127.0.0.1:8000/api/"));
-    string redirect ="author/?username="+this->username+"&password="+this->password;
+    string redirect ="author/?uudi="+this->uuid;
     cout<<"redirect:"<<redirect<<endl;
     uri_builder builder(U(redirect));
     client
@@ -166,15 +161,15 @@ int Author::json_get()
     return status;
 }
 
-void Author::json_post(json::value json_v)
+void Author::json_post(json::value post_data)
 {
     cout << "json_post() by "<<this->username<<endl;
     http_client client(U("http://127.0.0.1:8000/api/"));
-    string redirect ="author/?username="+this->username+"&password="+this->password;
+    string redirect ="author/?uudi="+this->uuid;
     cout<<"redirect: "<<redirect<<endl;
     uri_builder builder(U(redirect));
     client
-    .request(methods::POST, builder.to_string(), json_v)
+    .request(methods::POST, builder.to_string(), post_data)
     .then([&](http_response response) -> pplx::task<string_t> {
         cout<<"post.request: "<<response.status_code()<<endl;
         if(response.status_code() == status_codes::Created) {
@@ -198,34 +193,25 @@ int main()
     Author author;
     string choice;
     bool login=false;
-    time_t t1,t2;
     while(1){
         author.user_login(); 
         if(author.check_login()==200){  //sucessful login set time
-            do{
-                time(&t1);
-                cout<<"Get or Post?\n";
-                cin>>choice;
-                time(&t2);
-                if (choice=="Get"){
-                    author.json_get();
-                }
-                else if (choice=="Post"){
-                    string name;
-                    string email;
-                    cout<<"Pleas input your name and email\n";
-                    cin>>name>>email;
-                    json::value post_data ;
-                    post_data["name"] = json::value::string(name);
-                    post_data["email"] = json::value::string(email);
-                    author.json_post(post_data);
-                }
-
-            }while((t2-t1)<15);
-            author.username="";
-            author.password="";
-            login=false;
+            cout<<"Get or Post?\n";
+            cin>>choice;
+            if (choice=="Get"){
+                author.json_get();
+            }
+            else if (choice=="Post"){
+                string name;
+                string email;
+                cout<<"Pleas input your name and email\n";
+                cin>>name>>email;
+                json::value post_data ;
+                post_data["name"] = json::value::string(name);
+                post_data["email"] = json::value::string(email);
+                author.json_post(post_data);
+            }
          }
-        else cout<<"Time out, login again."<<endl;  //login in failed
+        else cout<<"Login Failed."<<endl; 
     }
 }

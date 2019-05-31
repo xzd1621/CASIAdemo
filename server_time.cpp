@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <openssl/md5.h>
 using namespace utility;                    // Common utilities like string conversions
 using namespace web;                        // Common features like URIs.
 using namespace web::http;                  // Common HTTP functionality
@@ -26,8 +27,36 @@ class Author
         void json_post(json::value json_v);
         void my_print_results(json::value const & value);
         void http_status(int status_code);
+        string MD5(const string& src );
 
 };
+
+string Author::MD5(const string& src )
+{
+    MD5_CTX ctx;
+
+    string md5_string;
+    unsigned char md[16] = { 0 };
+    char tmp[33] = { 0 };
+
+    MD5_Init( &ctx );
+    MD5_Update( &ctx, src.c_str(), src.size() );
+    MD5_Final( md, &ctx );
+
+    for( int i = 0; i < 16; ++i )
+    {   
+        memset( tmp, 0x00, sizeof( tmp ) );
+        sprintf( tmp, "%02X", md[i] );
+        md5_string += tmp;
+    }   
+    for(int i=0;i<md5_string.length();i++)
+    {
+        if(md5_string[i]>='A'&&md5_string[i]<='Z')
+        md5_string[i] += 'a'-'A';
+    }
+
+    return md5_string;
+}
 
 void Author::http_status(int status_code){
     switch (status_code){
@@ -70,6 +99,11 @@ void Author::user_login()
 {
     cout<<"Please input your username and password\n";
     cin>>this->username>>this->password;
+    cout<<"MD5:"<<MD5(this->username)<<endl;
+    if(MD5(this->username)=="21232f297a57a5a743894a0e4a801fc3"){
+        cout<<"same"<<endl;
+    }
+    else cout<<"dif"<<endl;
 }
 
 int Author::check_login()
@@ -136,10 +170,12 @@ void Author::json_post(json::value json_v)
     cout << "json_post() by "<<this->username<<endl;
     http_client client(U("http://127.0.0.1:8000/api/"));
     string redirect ="author/?username="+this->username+"&password="+this->password;
+    cout<<"redirect: "<<redirect<<endl;
     uri_builder builder(U(redirect));
     client
     .request(methods::POST, U(""), json_v)
     .then([](http_response response) -> pplx::task<string_t> {
+        cout<<"post.request: "<<response.status_code()<<endl;
         if(response.status_code() == status_codes::Created) {
             return response.extract_string();
         }
@@ -165,10 +201,11 @@ int main()
     while(1){
         author.user_login(); 
         if(author.check_login()==200){  //sucessful login set time
-            time(&t1);  
-            cout<<"Get or Post?\n";
-            cin>>choice;
             do{
+                time(&t1);
+                cout<<"Get or Post?\n";
+                cin>>choice;
+                time(&t2);
                 if (choice=="Get"){
                     author.json_get();
                 }
@@ -182,9 +219,8 @@ int main()
                     post_data["email"] = json::value::string(email);
                     author.json_post(post_data);
                 }
-                time(&t2);
-                cout<<"Get or Post?\n";
-            }while((t2-t1)<15 && (cin>>choice));
+
+            }while((t2-t1)<15);
             author.username="";
             author.password="";
          }

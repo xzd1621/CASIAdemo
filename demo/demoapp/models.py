@@ -10,6 +10,7 @@ class MyUser(models.Model):
         choices=((1, 'ordinary'), (2, 'vip')),
         default=1
     )
+    login_time = models.DateTimeField()
 
 
 class Publisher(models.Model):
